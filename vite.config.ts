@@ -3,8 +3,8 @@ import react from '@vitejs/plugin-react'
 import { resolve } from 'path'
 
 export default defineConfig({
+  base: '/Poseidon-Omni-spect/', // 👈 EXACT repo name, case-sensitive
   plugins: [react()],
-  base: '/Poseidon-Omni-spect/', // Important for GitHub Pages - matches repo name
   build: {
     outDir: 'dist',
     rollupOptions: {
