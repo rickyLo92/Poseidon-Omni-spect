@@ -20,92 +20,8 @@ const formatTime = (seconds: number): string => {
  * @param radius - Radius of the pie chart
  * @param data - Array of { label, value, color } objects
  */
-function drawPieChart(
-  doc: jsPDF,
-  x: number,
-  y: number,
-  radius: number,
-  data: Array<{ label: string; value: number; color: string }>
-): void {
-  const total = data.reduce((sum, item) => sum + item.value, 0);
-  if (total === 0) return;
-
-  let startAngle = -90; // Start from top (12 o'clock)
-  const centerX = x + radius;
-  const centerY = y + radius;
-
-  data.forEach((item) => {
-    const sliceAngle = (item.value / total) * 360;
-    const endAngle = startAngle + sliceAngle;
-
-    // Draw pie slice
-    doc.setFillColor(item.color);
-    doc.setDrawColor(0, 0, 0);
-    doc.setLineWidth(0.1);
-
-    // Convert hex color to RGB
-    const rgb = hexToRgb(item.color);
-    if (rgb) {
-      doc.setFillColor(rgb.r, rgb.g, rgb.b);
-    }
-
-    // Draw arc
-    const startRad = (startAngle * Math.PI) / 180;
-    const endRad = (endAngle * Math.PI) / 180;
-
-    // Draw pie slice using lines and curves
-    doc.circle(centerX, centerY, radius, 'FD'); // Fill and draw circle first
-
-    // Clear everything outside the slice
-    // We'll use a simpler approach: draw the slice as a path
-    if (sliceAngle > 0) {
-      // Start from center
-      const startX = centerX + Math.cos(startRad) * radius;
-      const startY = centerY + Math.sin(startRad) * radius;
-      const endX = centerX + Math.cos(endRad) * radius;
-      const endY = centerY + Math.sin(endRad) * radius;
-
-      // Draw the slice
-      doc.setFillColor(rgb?.r || 200, rgb?.g || 200, rgb?.b || 200);
-      
-      // Use arc method - jsPDF doesn't have perfect pie slice, so we approximate
-      // Draw filled sector
-      const path: Array<[number, number]> = [[centerX, centerY]];
-      
-      // Add points along the arc
-      const steps = Math.max(5, Math.ceil(sliceAngle / 5));
-      for (let i = 0; i <= steps; i++) {
-        const angle = startAngle + (sliceAngle * i) / steps;
-        const rad = (angle * Math.PI) / 180;
-        path.push([
-          centerX + Math.cos(rad) * radius,
-          centerY + Math.sin(rad) * radius
-        ]);
-      }
-      
-      // Draw the filled polygon
-      if (path.length > 2) {
-        doc.setFillColor(rgb?.r || 200, rgb?.g || 200, rgb?.b || 200);
-        // Draw filled polygon
-        doc.setDrawColor(0, 0, 0);
-        doc.setLineWidth(0.1);
-        
-        // Draw each segment
-        for (let i = 0; i < path.length - 1; i++) {
-          doc.line(centerX, centerY, path[i + 1][0], path[i + 1][1]);
-        }
-        doc.line(path[path.length - 1][0], path[path.length - 1][1], centerX, centerY);
-      }
-    }
-
-    startAngle = endAngle;
-  });
-
-  // Draw border circle
-  doc.setDrawColor(0, 0, 0);
-  doc.setLineWidth(0.5);
-  doc.circle(centerX, centerY, radius);
-}
+// Unused function - removed to fix TypeScript errors
+// This function was replaced by createPieChartImage which uses canvas for better quality
 
 /**
  * Convert hex color to RGB
@@ -275,8 +191,6 @@ function drawPieChartLegend(
     if (textWidth > maxTextWidth) {
       let truncatedLabel = item.label;
       const suffix = `: ${item.value} (${percentage}%)`;
-      const suffixWidth = doc.getTextWidth(suffix);
-      const availableWidth = maxTextWidth - suffixWidth;
       
       while (doc.getTextWidth(truncatedLabel + suffix) > maxTextWidth && truncatedLabel.length > 0) {
         truncatedLabel = truncatedLabel.substring(0, truncatedLabel.length - 1);
@@ -410,35 +324,6 @@ export async function generatePDFReport(
 
     doc.setFontSize(10);
     doc.setFont('helvetica', 'normal');
-    const introductionText = [
-      'This report presents the findings of a visual topside inspection carried out on the FPSO facility.',
-      'The objective of the inspection is to identify observable structural defects, integrity concerns,',
-      'safety hazards, and general degradation affecting topside equipment and systems. The inspection',
-      'process follows an industry-aligned methodology and references internationally recognised standards',
-      'to ensure consistency, accuracy and technical credibility.',
-      '',
-      'The assessment was conducted through non-intrusive, visual observation of all accessible topside',
-      'areas, including structural steelwork, piping systems, mechanical equipment, electrical',
-      'installations, fire and safety systems, and lifting components. No dismantling, internal',
-      'inspection or pressure testing was performed. Instead, the inspection focuses solely on external',
-      'condition indicators such as corrosion, coating breakdown, deformation, leakage evidence,',
-      'insulation damage, improper support, loose fixings, and visible safety non-compliances.',
-      '',
-      'The inspection approach is guided by the principles and requirements contained within key',
-      'international standards applicable to offshore topside facilities. These include structural',
-      'integrity practices from DNV-RP-C203, DNV-ST-F201 and API RP 2SIM; piping and mechanical',
-      'condition criteria from API 570, API 510, API 571 and ASME B31.3; electrical and',
-      'instrumentation visual inspection requirements from IEC 60079, API RP 14F/14FZ and NFPA 70;',
-      'and fire protection and safety system guidelines from NFPA 11/15/16, SOLAS and API RP 14C.',
-      'Lifting equipment assessments draw on API RP 2D, DNV-ST-0378 and LOLER.',
-      '',
-      'These standards provide the framework for identifying, categorising and interpreting defects',
-      'observed during the visual assessment. While the inspection remains non-destructive, the',
-      'application of recognised offshore integrity standards ensures that the findings are technically',
-      'grounded and aligned with global best practice. The results presented in this report therefore',
-      'support informed decision-making regarding maintenance planning, risk mitigation and asset',
-      'integrity management.',
-    ];
 
     // Helper function to add justified text
     const addJustifiedText = (text: string, x: number, y: number, maxWidth: number, lineHeight: number): number => {
@@ -513,45 +398,6 @@ export async function generatePDFReport(
     doc.setFontSize(11);
     doc.setFont('helvetica', 'normal');
     const lineHeight = 6;
-    const methodologyText = [
-      'This inspection report has been generated using a 360° video annotation system designed to facilitate',
-      'comprehensive visual inspections of industrial facilities and equipment. The methodology follows industry',
-      'best practices for remote visual inspection and documentation.',
-      '',
-      'INSPECTION METHODOLOGY:',
-      '',
-      '1. Video Capture: High-resolution 360° equirectangular video footage is captured using specialized',
-      '   camera equipment, providing a complete spherical view of the inspection area.',
-      '',
-      '2. Annotation Process: Trained inspectors review the video footage and identify defects, anomalies,',
-      '   or areas of concern. Each annotation is created by:',
-      '   • Selecting the specific location on the 360° sphere where the defect is visible',
-      '   • Recording the timestamp at which the defect appears in the video',
-      '   • Classifying the defect using standardized categories (Primary and Secondary Descriptions)',
-      '   • Assessing severity using Grade (1-4) and DROPS (1-4) scoring systems',
-      '   • Calculating Risk Index (Grade × DROPS) to determine priority',
-      '   • Capturing a screenshot for visual documentation',
-      '',
-      '3. Quality Assurance: All annotations are reviewed to ensure accuracy and consistency in classification',
-      '   and risk assessment.',
-      '',
-      '4. Reporting: This comprehensive report is generated, including:',
-      '   • Summary statistics and visualizations',
-      '   • Index of all defects sorted by timestamp',
-      '   • Detailed documentation of each defect with screenshots and metadata',
-      '',
-      'STANDARDS COMPLIANCE:',
-      '',
-      'This inspection methodology aligns with recognized industry standards for visual inspection, including:',
-      '• Systematic documentation of findings',
-      '• Risk-based prioritization of defects',
-      '• Traceable timestamps and location data',
-      '• Comprehensive photographic evidence',
-      '• Standardized classification systems',
-      '',
-      'The annotation system ensures that all defects are world-locked to their physical locations in the',
-      '360° environment, allowing for accurate spatial reference and follow-up inspections.',
-    ];
 
     // Combine methodology text into paragraphs for justification (but preserve structure)
     const methodologyParagraphs = [

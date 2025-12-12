@@ -31,7 +31,7 @@ export function screenToWorldDirection(
   screenWidth: number,
   screenHeight: number,
   camera: THREE.PerspectiveCamera,
-  cameraRotation: { phi: number; theta: number }
+  _cameraRotation: { phi: number; theta: number }
 ): { phi: number; theta: number } | null {
   // Convert screen coordinates to normalized device coordinates (NDC)
   // NDC: x in [-1, 1] (left to right), y in [-1, 1] (top to bottom)
@@ -143,12 +143,12 @@ export function legacyBoxToWorldDirection(
   // Approximate the direction using the field of view
   // For a typical 75° FOV camera, we can estimate
   const fov = 75 * (Math.PI / 180); // Convert to radians
-  const aspect = 1; // Assume square for migration (or use typical aspect)
+  // const aspect = 1; // Assume square for migration (or use typical aspect) - unused for now
   
   // Estimate phi and theta from NDC coordinates
   // This is approximate and assumes the annotation was created at default camera orientation
-  const theta = Math.atan2(ndcX, 1) * (fov / 2);
-  const phi = Math.atan2(ndcY, 1) * (fov / 2);
+  // const theta = Math.atan2(ndcX, 1) * (fov / 2); // Unused - calculated differently below
+  // const phi = Math.atan2(ndcY, 1) * (fov / 2); // Unused - calculated differently below
   
   // If we have camera rotation, adjust the world direction
   if (cameraRotation) {

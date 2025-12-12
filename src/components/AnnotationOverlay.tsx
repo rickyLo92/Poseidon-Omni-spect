@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, useMemo } from 'react';
 import * as THREE from 'three';
 import { Annotation, ANNOTATION_COLORS, PRIMARY_DESCRIPTIONS, SECONDARY_DESCRIPTIONS } from '../types';
-import { screenToWorldDirection, worldDirectionToScreen, getAnnotationBox, legacyBoxToWorldDirection } from '../utils/annotationGeometry';
+import { screenToWorldDirection, worldDirectionToScreen, getAnnotationBox } from '../utils/annotationGeometry';
 
 interface AnnotationOverlayProps {
   /** Whether annotation mode is enabled */
@@ -52,20 +52,28 @@ export function AnnotationOverlay({
   onPauseVideo,
   onGetCameraRotation,
   onGetCamera,
-  selectedAnnotationId,
+  selectedAnnotationId: _selectedAnnotationId,
 }: AnnotationOverlayProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const isDrawingRef = useRef(false);
   const startPosRef = useRef({ x: 0, y: 0 });
   const currentBoxRef = useRef<{ x: number; y: number; width: number; height: number } | null>(null);
   const [showForm, setShowForm] = useState(false);
-  const [formData, setFormData] = useState({ 
+  const [formData, setFormData] = useState<{
+    notes: string;
+    colour: string;
+    grade: number | 'N/A';
+    drops: number | 'N/A';
+    primaryDescription: string;
+    secondaryDescription: string;
+    description: string;
+  }>({ 
     notes: '', 
     colour: ANNOTATION_COLORS[0].value,
-    grade: 'N/A' as number | 'N/A',
-    drops: 'N/A' as number | 'N/A',
-    primaryDescription: '' as string,
-    secondaryDescription: '' as string,
+    grade: 'N/A',
+    drops: 'N/A',
+    primaryDescription: '',
+    secondaryDescription: '',
     description: '', // Legacy field, not used in new form
   });
   const [pendingBox, setPendingBox] = useState<{ x: number; y: number; width: number; height: number } | null>(null);
@@ -286,8 +294,8 @@ export function AnnotationOverlay({
   const captureScreenshot = async (
     video: HTMLVideoElement,
     overlayCanvas: HTMLCanvasElement,
-    annotationBox: { x: number; y: number; width: number; height: number } | null,
-    annotationColor: string
+    _annotationBox: { x: number; y: number; width: number; height: number } | null,
+    _annotationColor: string
   ): Promise<string> => {
     // Always use canvas compositing to ensure both video and overlay are included
     // This is more reliable than window capture
@@ -553,7 +561,7 @@ export function AnnotationOverlay({
       const defectNumber = annotations.length + 1;
 
       // Calculate color if needed (auto-calculate if one is N/A)
-      let finalColor = formData.colour;
+      let finalColor: string = formData.colour;
       if (formData.grade === 'N/A' || formData.drops === 'N/A') {
         finalColor = calculateColor(formData.grade, formData.drops);
       }
@@ -1015,12 +1023,14 @@ export function AnnotationOverlay({
               <select
                 value={formData.grade}
                 onChange={(e) => {
-                  const newValue = e.target.value === 'N/A' ? 'N/A' : parseInt(e.target.value);
-                  const updatedFormData = { ...formData, grade: newValue };
-                  // Auto-update color if needed
-                  if (newValue === 'N/A' || formData.drops === 'N/A') {
-                    updatedFormData.colour = calculateColor(newValue, formData.drops);
-                  }
+                  const newValue: number | 'N/A' = e.target.value === 'N/A' ? 'N/A' : parseInt(e.target.value);
+                  const updatedFormData = { 
+                    ...formData, 
+                    grade: newValue,
+                    colour: (newValue === 'N/A' || formData.drops === 'N/A') 
+                      ? calculateColor(newValue, formData.drops) 
+                      : formData.colour
+                  };
                   setFormData(updatedFormData);
                 }}
                 style={{ width: '100%', padding: '8px', boxSizing: 'border-box', backgroundColor: '#555', color: 'white', border: '1px solid #666' }}
@@ -1040,12 +1050,14 @@ export function AnnotationOverlay({
               <select
                 value={formData.drops}
                 onChange={(e) => {
-                  const newValue = e.target.value === 'N/A' ? 'N/A' : parseInt(e.target.value);
-                  const updatedFormData = { ...formData, drops: newValue };
-                  // Auto-update color if needed
-                  if (newValue === 'N/A' || formData.grade === 'N/A') {
-                    updatedFormData.colour = calculateColor(formData.grade, newValue);
-                  }
+                  const newValue: number | 'N/A' = e.target.value === 'N/A' ? 'N/A' : parseInt(e.target.value);
+                  const updatedFormData = { 
+                    ...formData, 
+                    drops: newValue,
+                    colour: (newValue === 'N/A' || formData.grade === 'N/A') 
+                      ? calculateColor(formData.grade, newValue) 
+                      : formData.colour
+                  };
                   setFormData(updatedFormData);
                 }}
                 style={{ width: '100%', padding: '8px', boxSizing: 'border-box', backgroundColor: '#555', color: 'white', border: '1px solid #666' }}
@@ -1076,7 +1088,7 @@ export function AnnotationOverlay({
                         backgroundColor: color.value,
                         border: formData.colour === color.value 
                           ? '3px solid #fff' 
-                          : color.value === '#ffffff' 
+                          : (color.value as string) === '#ffffff'
                             ? '2px solid #ccc' 
                             : '1px solid #ccc',
                         cursor: 'pointer',

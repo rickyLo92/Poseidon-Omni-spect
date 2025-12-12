@@ -17,13 +17,13 @@ interface HighlightVideoPlayerProps {
  * Each screenshot is displayed for 2 seconds in the output video.
  */
 export function HighlightVideoPlayer({
-  videoElement,
+  videoElement: _videoElement,
   annotations,
   onClose,
-  seekFunction,
-  restoreCameraViewFunction,
+  seekFunction: _seekFunction,
+  restoreCameraViewFunction: _restoreCameraViewFunction,
   videoPath,
-  videoFileName,
+  videoFileName: _videoFileName,
 }: HighlightVideoPlayerProps) {
   const [isRecording, setIsRecording] = useState(false);
   const [recordedBlob, setRecordedBlob] = useState<Blob | null>(null);

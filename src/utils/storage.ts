@@ -137,7 +137,7 @@ export async function ensureDeliverablesFolder(videoPath: string): Promise<strin
 export async function saveScreenshotToFile(
   screenshotDataUrl: string,
   annotationId: string,
-  videoFileName: string,
+  _videoFileName: string,
   directory?: string
 ): Promise<void> {
   try {
@@ -198,7 +198,7 @@ export async function saveScreenshotToFile(
  */
 export async function saveAnnotationsToCSV(
   annotations: Annotation[],
-  videoFileName: string,
+  _videoFileName: string,
   directory?: string
 ): Promise<void> {
   try {

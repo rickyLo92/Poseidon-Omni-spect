@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { VRButton } from 'three/examples/jsm/webxr/VRButton.js';
 
@@ -404,7 +404,7 @@ export function Video360Player({ videoUrl, onTimeUpdate, onVideoReady, disablePa
 
     // Animation loop using setAnimationLoop for VR compatibility
     // This works for both normal desktop rendering and WebXR VR rendering
-    renderer.setAnimationLoop((time, frame) => {
+    renderer.setAnimationLoop((_time, _frame) => {
       try {
         if (rendererRef.current && sceneRef.current && cameraRef.current) {
           // Update texture if video is ready (needed for both desktop and VR)
