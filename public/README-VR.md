@@ -16,55 +16,95 @@ The 360° Video Annotator now supports **WebXR/VR viewing** on compatible device
    - Oculus Quest (1, 2, or 3) with Oculus Browser
    - Other WebXR-compatible headsets and browsers
    
-2. **Built application**: The app must be built and served via HTTPS (required for WebXR):
+2. **Built application**: The app must be built and served via HTTPS (required for WebXR)
+
+3. **HTTPS hosting**: WebXR requires a secure context (HTTPS). Options:
+   - **GitHub Pages** (Recommended - see deployment instructions below)
+   - Use a local HTTPS server (e.g., `npx serve -s dist --ssl`)
+   - Deploy to a hosting service with HTTPS (Netlify, Vercel, etc.)
+   - Use ngrok or similar for local HTTPS tunneling
+
+## GitHub Pages Deployment (Recommended)
+
+The easiest way to deploy for VR viewing is using GitHub Pages, which provides free HTTPS hosting:
+
+### Setup
+
+1. **Install gh-pages** (if not already installed):
    ```bash
-   npm run build
+   npm install --save-dev gh-pages
+   ```
+
+2. **Configure your repository**:
+   - Ensure your GitHub repository is named `Poseidon-Omni-spect`
+   - Or update the `base` path in `vite.config.ts` to match your repository name
+
+3. **Deploy to GitHub Pages**:
+   ```bash
+   npm run deploy
    ```
    
-3. **HTTPS hosting**: WebXR requires a secure context (HTTPS). Options:
-   - Use a local HTTPS server (e.g., `npx serve -s dist --ssl`)
-   - Deploy to a hosting service with HTTPS
-   - Use ngrok or similar for local HTTPS tunneling
+   This command will:
+   - Build the application (`npm run build`)
+   - Deploy the `dist/` folder to the `gh-pages` branch
+   - Make it available at `https://[your-username].github.io/Poseidon-Omni-spect/`
+
+4. **Enable GitHub Pages** in your repository settings:
+   - Go to your GitHub repository
+   - Navigate to Settings → Pages
+   - Select the `gh-pages` branch as the source
+   - Save
+
+Your application will be available at: `https://[your-username].github.io/Poseidon-Omni-spect/`
+
+### Updating the Deployment
+
+Whenever you make changes and want to update the live site:
+
+```bash
+npm run deploy
+```
+
+This rebuilds and redeploys automatically.
 
 ## Using VR Mode
 
-### Step 1: Build the Application
+### Option 1: GitHub Pages (Recommended)
 
-First, build the application for production:
+1. **Deploy to GitHub Pages** (see deployment instructions above)
+2. **Open in Oculus Browser**:
+   - Put on your Oculus Quest headset
+   - Open the **Oculus Browser**
+   - Navigate to: `https://[your-username].github.io/Poseidon-Omni-spect/`
+   - Wait for the 360° video player to load
 
-```bash
-npm run build
-```
+### Option 2: Local HTTPS Server
 
-This creates an optimized build in the `dist/` directory.
+If you prefer to test locally:
 
-### Step 2: Serve the Application via HTTPS
+1. **Build the application**:
+   ```bash
+   npm run build
+   ```
 
-You must serve the built application over HTTPS. Here are some options:
+2. **Serve via HTTPS** (choose one):
 
-#### Option A: Using serve with SSL
-```bash
-npx serve -s dist --ssl-cert path/to/cert.pem --ssl-key path/to/key.pem
-```
+   **Option A: Using serve with SSL**
+   ```bash
+   npx serve -s dist --ssl-cert path/to/cert.pem --ssl-key path/to/key.pem
+   ```
 
-#### Option B: Using a simple HTTPS server (Node.js)
-```bash
-# Install http-server if needed
-npm install -g http-server
+   **Option B: Using http-server**
+   ```bash
+   npm install -g http-server
+   http-server dist -S -C cert.pem -K key.pem -p 8080
+   ```
 
-# Run with HTTPS (you'll need SSL certificates)
-http-server dist -S -C cert.pem -K key.pem -p 8080
-```
-
-#### Option C: Deploy to a hosting service
-Upload the contents of `dist/` to any static hosting service with HTTPS (Netlify, Vercel, GitHub Pages with custom domain, etc.).
-
-### Step 3: Open in Oculus Browser
-
-1. Put on your Oculus Quest headset
-2. Open the **Oculus Browser**
-3. Navigate to the HTTPS URL where you're hosting the application
-4. Wait for the 360° video player to load
+3. **Open in Oculus Browser**:
+   - Put on your Oculus Quest headset
+   - Open the **Oculus Browser**
+   - Navigate to your local HTTPS URL (e.g., `https://[your-ip]:8080`)
+   - Wait for the 360° video player to load
 
 ### Step 4: Enter VR Mode
 
