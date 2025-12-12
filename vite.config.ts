@@ -4,7 +4,7 @@ import { resolve } from 'path'
 
 export default defineConfig({
   plugins: [react()],
-  base: './', // Use relative paths for Electron
+  base: '/Poseidon-Omni-spect/', // Important for GitHub Pages - matches repo name
   build: {
     outDir: 'dist',
     rollupOptions: {
