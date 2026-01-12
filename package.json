@@ -1,5 +1,5 @@
 {
-  "name": "360-video-annotator",
+  "name": "omninspect",
   "version": "1.0.0",
   "type": "module",
   "main": "dist-electron/main.cjs",
@@ -36,8 +36,8 @@
     "wait-on": "^7.2.0"
   },
   "build": {
-    "appId": "com.360videoannotator.app",
-    "productName": "360° Video Annotator",
+    "appId": "com.omninspect.app",
+    "productName": "OmnInspect",
     "directories": {
       "output": "release"
     },
